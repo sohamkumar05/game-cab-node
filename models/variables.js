@@ -12,6 +12,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+    static variableHolder = {
+      total_balance: "total_balance",
+      order_probability: "order_probability",
+      special_order_probability: "special_order_probability",
+      total_expense: "total_expense",
+      total_revenue: "total_revenue"
+    }
   }
   variables.init({
     variable_name: DataTypes.STRING,
