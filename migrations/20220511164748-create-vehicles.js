@@ -12,22 +12,22 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       vehicle_cost: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       max_distance: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       driver_commission_percentage: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       vehicle_capacity: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER(10, 2)
       },
       avg_speed: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       resell_value: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       is_unlocked: {
         type: Sequelize.BOOLEAN

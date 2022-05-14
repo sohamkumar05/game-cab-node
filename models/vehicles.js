@@ -15,17 +15,22 @@ module.exports = (sequelize, DataTypes) => {
   }
   vehicles.init({
     vehicle_type: DataTypes.INTEGER,
-    vehicle_cost: DataTypes.DECIMAL,
-    max_distance: DataTypes.DECIMAL,
-    driver_commission_percentage: DataTypes.DECIMAL,
+    vehicle_cost: DataTypes.DECIMAL(10, 2),
+    max_distance: DataTypes.DECIMAL(10, 2),
+    driver_commission_percentage: DataTypes.DECIMAL(10, 2),
     vehicle_capacity: DataTypes.INTEGER,
-    avg_speed: DataTypes.DECIMAL,
-    resell_value: DataTypes.DECIMAL,
+    avg_speed: DataTypes.DECIMAL(10, 2),
+    resell_value: DataTypes.DECIMAL(10, 2),
     is_unlocked: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'vehicles',
   });
+
+  vehicles.lockStatus = {
+    LOCKED: false,
+    UNLOCKED: true
+  }
 
   vehicles.getAllVehicles = async() => {
     try {
@@ -89,13 +94,29 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  vehicles.getUnlockedVehiclesId = async(vehicle_type) => {
+  vehicles.getResellValue = async (vehicle_type) => {
+    try {
+      let values = await vehicles.findOne({
+        attributes: ["resell_value"],
+        where:{vehicle_type}
+      });
+      if (values) {
+        return values.resell_value;
+      }
+      throw "Invalid variable name";
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  vehicles.getVehiclesIdOnLockStatus = async(vehicle_type, is_unlocked) => {
     try {
       let unlockedVehicle = await vehicles.findOne({
         attributes: ["id"],
         where: {
           vehicle_type,
-          is_unlocked: false
+          is_unlocked
         }
       });
       if (!unlockedVehicle) {
@@ -108,11 +129,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  vehicles.unlockVehicleById = async(id) => {
+  vehicles.unlockOrLockVehicleByIdOnLockStatus = async(id, is_unlocked, t) => {
     try {
       const result = await vehicles.update(
-        {is_unlocked: true},
-        {where: {id}}
+        {is_unlocked},
+        {where: {id}},
+        { transaction: t }
       );
       return;
     } catch (error) {

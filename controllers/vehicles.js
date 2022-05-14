@@ -31,25 +31,79 @@ const vehicles = {
     },
 
     unlockVehicle: async function (req, res) {
+        const t = await models.sequelize.transaction();
         try {
             let vehicle = await models.vehicles.getVehicles(req.params.vehicle_type);
             if (vehicle.total_number === vehicle.unlocked_number) {
-                res.status(400).send({
+                return res.status(400).send({
                     success: false,
                     message: "All vehicles already unlocked."
                 });
             }
-            let id = await models.vehicles.getUnlockedVehiclesId(req.params.vehicle_type);
-            await models.vehicles.unlockVehicleById(id);
+            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.params.vehicle_type, models.vehicles.lockStatus.LOCKED);
+            let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
+            if (balance < vehicle.vehicle_cost) {
+                res.status(400).send({
+                    success: false,
+                    message: "Not enough money."
+                });
+            }
+            balance = balance - vehicle.vehicle_cost;
+            await models.vehicles.unlockOrLockVehicleByIdOnLockStatus(id, models.vehicles.lockStatus.UNLOCKED, t);
+            await models.variables.setVariableValue(models.variables.variableHolder.total_balance, balance, t);
+            await models.variables.setVariableValue(models.variables.variableHolder.total_expense, vehicle.vehicle_cost, t);
+            await t.commit();
             res.status(200).send({
                 success: true,
                 message: "Vehicle unlock successful."
             });
         } catch (error) {
+            await t.rollback();
             res.status(400).send({
                 success: false,
                 message: "Vehicle unlock unsuccessful."
             });
+        }
+    },
+
+    resellVehicle: async function (req, res) {
+        const t = await models.sequelize.transaction();
+        try {
+            let vehicle = await models.vehicles.getVehicles(req.params.vehicle_type);
+            if (!vehicle.unlocked_number) {
+                return res.status(400).send({
+                    success: false,
+                    message: "All vehicles already locked."
+                });
+            }
+            let resell_value = parseFloat(await models.vehicles.getResellValue(req.params.vehicle_type));
+            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.params.vehicle_type, models.vehicles.lockStatus.UNLOCKED);
+            let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
+            console.log(typeof resell_value, typeof balance);
+            balance = balance + resell_value;
+            await models.vehicles.unlockOrLockVehicleByIdOnLockStatus(id, models.vehicles.lockStatus.LOCKED, t);
+            await models.variables.setVariableValue(models.variables.variableHolder.total_balance, balance, t);
+            await t.commit();
+            res.status(200).send({
+                success: true,
+                message: "Vehicle lock successful."
+            });
+        } catch (error) {
+            await t.rollback();
+            console.error(error);
+            res.status(400).send({
+                success: false,
+                message: "Vehicle lock unsuccessful."
+            });
+        }
+    },
+
+    getResellValue: async function (req, res) {
+        try {
+            let resell_value = await models.vehicles.getResellValue(req.params.vehicle_type);
+            res.status(200).send({ resell_value });
+        } catch (error) {
+            res.status(400).send(error);
         }
     }
 
