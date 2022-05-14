@@ -42,6 +42,7 @@ const vehicles = {
             }
             let id = await models.vehicles.getVehiclesIdOnLockStatus(req.params.vehicle_type, models.vehicles.lockStatus.LOCKED);
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
+            let total_expense = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_expense));
             if (balance < vehicle.vehicle_cost) {
                 res.status(400).send({
                     success: false,
@@ -49,9 +50,10 @@ const vehicles = {
                 });
             }
             balance = balance - vehicle.vehicle_cost;
+            total_expense = total_expense + vehicle.vehicle_cost;
             await models.vehicles.unlockOrLockVehicleByIdOnLockStatus(id, models.vehicles.lockStatus.UNLOCKED, t);
             await models.variables.setVariableValue(models.variables.variableHolder.total_balance, balance, t);
-            await models.variables.setVariableValue(models.variables.variableHolder.total_expense, vehicle.vehicle_cost, t);
+            await models.variables.setVariableValue(models.variables.variableHolder.total_expense, total_expense, t);
             await t.commit();
             res.status(200).send({
                 success: true,
