@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
       order_probability: "order_probability",
       special_order_probability: "special_order_probability",
       total_expense: "total_expense",
-      total_revenue: "total_revenue"
+      total_revenue: "total_revenue",
+      base_earning: "base_earning"
     }
   }
   variables.init({
