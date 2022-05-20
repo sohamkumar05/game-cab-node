@@ -23,5 +23,46 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'locations',
   });
+
+  locations.lockStatus = {
+    LOCKED: false,
+    UNLOCKED: true
+  }
+
+  locations.getAllLocations = () => {
+    try {
+      let locationDetails = await locations.findAll({
+        attributes: ["id", "location_name", "location_cost", "is_unlocked"]
+      });
+      return locationDetails;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  locations.getLocation = (id) => {
+    try {
+      let locationDetails = await locations.findAll({
+        attributes: ["id", "location_name", "location_cost", "is_unlocked"],
+        where: { id }
+      });
+      return locationDetails;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  locations.unlockLocation = (id, t) => {
+    try {
+      await locations.update(
+        { is_unlocked: locations.lockStatus.UNLOCKED },
+        { where: { id } },
+        {transaction: t}
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
   return locations;
 };

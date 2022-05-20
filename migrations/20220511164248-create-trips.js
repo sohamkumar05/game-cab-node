@@ -32,6 +32,12 @@ module.exports = {
       trip_load: {
         type: Sequelize.INTEGER
       },
+      is_accepted: {
+        type: Sequelize.BOOLEAN
+      },
+      is_delivered: {
+        type: Sequelize.BOOLEAN
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

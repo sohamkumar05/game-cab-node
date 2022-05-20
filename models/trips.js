@@ -1,6 +1,6 @@
 'use strict';
 const {
-  Model
+  Model, BOOLEAN
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class trips extends Model {
@@ -21,7 +21,9 @@ module.exports = (sequelize, DataTypes) => {
     trip_earning: DataTypes.DECIMAL,
     trip_distance: DataTypes.DECIMAL,
     trip_commission: DataTypes.DECIMAL,
-    trip_load: DataTypes.INTEGER
+    trip_load: DataTypes.INTEGER,
+    is_accepted: DataTypes.BOOLEAN,
+    is_delivered: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'trips',
