@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     UNLOCKED: true
   }
 
-  locations.getAllLocations = () => {
+  locations.getAllLocations = async() => {
     try {
       let locationDetails = await locations.findAll({
         attributes: ["id", "location_name", "location_cost", "is_unlocked"]
@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  locations.getLocation = (id) => {
+  locations.getLocation = async(id) => {
     try {
       let locationDetails = await locations.findAll({
         attributes: ["id", "location_name", "location_cost", "is_unlocked"],
@@ -52,7 +52,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  locations.unlockLocation = (id, t) => {
+  locations.unlockLocation = async(id, t) => {
     try {
       await locations.update(
         { is_unlocked: locations.lockStatus.UNLOCKED },
