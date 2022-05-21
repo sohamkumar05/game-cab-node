@@ -9,6 +9,8 @@ const stats = {
             res.status(400).send({ success: false, error });
         }
     },
+
+    getStats: async function (req, res) {}
 };
 
 module.exports = stats;

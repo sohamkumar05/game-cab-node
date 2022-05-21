@@ -29,13 +29,14 @@ module.exports = (sequelize, DataTypes) => {
     UNLOCKED: true
   }
 
-  locations.getAllLocations = async() => {
+  locations.getAllLocations = async(otherAttributes) => {
     try {
       let locationDetails = await locations.findAll({
-        attributes: ["id", "location_name", "location_cost", "is_unlocked"]
+        attributes: ["id", "location_name", "location_cost", "is_unlocked", ...otherAttributes]
       });
       return locationDetails;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
@@ -48,6 +49,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       return locationDetails;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }
@@ -60,6 +62,7 @@ module.exports = (sequelize, DataTypes) => {
         {transaction: t}
       );
     } catch (error) {
+      console.error(error);
       throw error;
     }
   }

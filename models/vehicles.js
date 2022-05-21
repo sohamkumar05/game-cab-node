@@ -94,6 +94,37 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
+  vehicles.getFreeVehicles = async() => {
+    try {
+      let vehiclesData = await sequelize.query(`
+      select v.vehicle_type, count(v.id) as free_vehicles
+      from vehicles v left join trips t 
+      on v.id = t.vehicle_id and (t.is_accepted = 0 or t.is_delivered = 1) and v.is_unlocked = 1
+      group by v.vehicle_type;
+      `, { type: sequelize.QueryTypes.SELECT });
+      return vehiclesData;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  vehicles.getFreeVehiclesBasedOnDistanceAndLoad = async(distance, load) => {
+    try {
+      let vehiclesData = await sequelize.query(`
+      select v.vehicle_type, count(v.id) as free_vehicles, v.driver_commission_percentage, v.avg_speed
+      from vehicles v left join trips t 
+      on v.id = t.vehicle_id and (t.is_accepted = 0 or t.is_delivered = 1) and v.is_unlocked = 1
+      where v.max_distance >= ${distance} and v.vehicle_capacity >= ${load}
+      group by v.vehicle_type;
+      `, { type: sequelize.QueryTypes.SELECT });
+      return vehiclesData;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   vehicles.getResellValue = async (vehicle_type) => {
     try {
       let values = await vehicles.findOne({
@@ -137,6 +168,25 @@ module.exports = (sequelize, DataTypes) => {
         { transaction: t }
       );
       return;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  vehicles.getFreeVehicleOfType = async(vehicle_type) => {
+    try {
+      let vehiclesData = await sequelize.query(`
+      select v.id as vehicle_id, v.driver_commission_percentage, v.avg_speed
+      from vehicles v left join trips t 
+      on v.id = t.vehicle_id and (t.is_accepted = 0 or t.is_delivered = 1) and v.is_unlocked = 1
+      where v.vehicle_type = ${vehicle_type} 
+      limit 1;`, 
+      { type: sequelize.QueryTypes.SELECT });
+      if (!vehiclesData || !vehiclesData.length) {
+        throw "No vehicles free.";
+      }
+      return vehiclesData[0];
     } catch (error) {
       console.error(error);
       throw error;

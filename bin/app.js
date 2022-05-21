@@ -1,4 +1,3 @@
-const cool = require('cool-ascii-faces');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -7,6 +6,8 @@ var logger = require('morgan');
 
 var usersRouter = require('../routes/users');
 var vehiclesRouter = require('../routes/vehicles');
+var statsRouter = require('../routes/stats');
+var tripsRouter = require('../routes/trips');
 const port = 3000;
 
 var app = express();
@@ -20,15 +21,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/cool', (req, res) => res.send(cool()))
 
 app.use('/users', usersRouter);
 app.use('/vehicles', vehiclesRouter);
+app.use('/stats', statsRouter);
+app.use('/trips', tripsRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+// app.use(function(req, res, next) {
+//   next(createError(404));
+// });
 
 // error handler
 app.use(function(err, req, res, next) {
