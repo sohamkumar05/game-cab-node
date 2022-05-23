@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
 
   locations.getLocation = async(id) => {
     try {
-      let locationDetails = await locations.findAll({
+      let locationDetails = await locations.findOne({
         attributes: ["id", "location_name", "location_cost", "is_unlocked"],
         where: { id }
       });

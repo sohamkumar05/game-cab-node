@@ -69,18 +69,18 @@ const trips = {
     acceptTrip: async function (req, res) {
         const t = await models.sequelize.transaction();
         try {
-            let {vehicle_type, trip_id, is_doubled} = req.data;
+            let {vehicle_type, trip_id, is_doubled} = req.body;
             let tripDataForTripId = await models.trips.getLatestTripAdded({id: trip_id});
             let freeVehicleOfType = await models.vehicles.getFreeVehicleOfType(vehicle_type);
             let base_earning = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.base_earning));
-            let trip_earning = (is_doubled ? 2 : 1) * base_earning * tripDataForTripId.trip_distance * tripDataForTripId.trip_load * freeVehicleOfType.vehicle_type;
+            let trip_earning = (is_doubled ? 2 : 1) * base_earning * tripDataForTripId.trip_distance * tripDataForTripId.trip_load * vehicle_type;
             let duration = tripDataForTripId.trip_distance / freeVehicleOfType.avg_speed;
             let minutes = Math.floor(duration);
             let seconds = Math.round((duration - minutes) * 60);
             let driver_commission = (trip_earning * parseFloat(freeVehicleOfType.driver_commission_percentage) / 100).toFixed(2);
             let tripDataToAccept = {
                 trip_id,
-                vehicle_id: freeVehicleOfType.id,
+                vehicle_id: freeVehicleOfType.vehicle_id,
                 trip_earning,
                 trip_commission: driver_commission,
                 trip_duration: minutes * 60 + seconds
@@ -96,15 +96,18 @@ const trips = {
     completeTrip: async function (req, res) {
         const t = await models.sequelize.transaction();
         try {
-            let {trip_id} = req.data;
+            let {trip_id} = req.body;
             let tripDataForTripId = await models.trips.getLatestTripAdded({id: trip_id});
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
             let total_expense = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_expense));
+            let total_revenue = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_revenue));
+            total_revenue = total_revenue + parseFloat(tripDataForTripId.trip_earning);
             balance = balance + parseFloat(tripDataForTripId.trip_earning) - parseFloat(tripDataForTripId.trip_commission);
             total_expense = total_expense + parseFloat(tripDataForTripId.trip_commission);
             await models.trips.markTripAsDelivered(trip_id, t);
             await models.variables.setVariableValue(models.variables.variableHolder.total_balance, balance, t);
             await models.variables.setVariableValue(models.variables.variableHolder.total_expense, total_expense, t);
+            await models.variables.setVariableValue(models.variables.variableHolder.total_revenue, total_revenue, t);
             await t.commit();
             res.status(200).send({ success: true, message: "Trip completed." });
         } catch (error) {

@@ -33,14 +33,14 @@ const vehicles = {
     unlockVehicle: async function (req, res) {
         const t = await models.sequelize.transaction();
         try {
-            let vehicle = await models.vehicles.getVehicles(req.data.vehicle_type);
+            let vehicle = await models.vehicles.getVehicles(req.body.vehicle_type);
             if (vehicle.total_number === vehicle.unlocked_number) {
                 return res.status(400).send({
                     success: false,
                     message: "All vehicles already unlocked."
                 });
             }
-            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.data.vehicle_type, models.vehicles.lockStatus.LOCKED);
+            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.body.vehicle_type, models.vehicles.lockStatus.LOCKED);
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
             let total_expense = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_expense));
             if (balance < vehicle.vehicle_cost) {
@@ -71,15 +71,15 @@ const vehicles = {
     resellVehicle: async function (req, res) {
         const t = await models.sequelize.transaction();
         try {
-            let vehicle = await models.vehicles.getVehicles(req.data.vehicle_type);
+            let vehicle = await models.vehicles.getVehicles(req.body.vehicle_type);
             if (!vehicle.unlocked_number) {
                 return res.status(400).send({
                     success: false,
                     message: "All vehicles already locked."
                 });
             }
-            let resell_value = parseFloat(await models.vehicles.getResellValue(req.data.vehicle_type));
-            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.data.vehicle_type, models.vehicles.lockStatus.UNLOCKED);
+            let resell_value = parseFloat(await models.vehicles.getResellValue(req.body.vehicle_type));
+            let id = await models.vehicles.getVehiclesIdOnLockStatus(req.body.vehicle_type, models.vehicles.lockStatus.UNLOCKED);
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
             balance = balance + resell_value;
             await models.vehicles.unlockOrLockVehicleByIdOnLockStatus(id, models.vehicles.lockStatus.LOCKED, t);

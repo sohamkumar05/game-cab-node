@@ -100,5 +100,45 @@ module.exports = (sequelize, DataTypes) => {
       throw error;
     }
   }
+
+  trips.getTotalOrdersCompletedAndTotalTripTime = async () => {
+    try {
+      let totalOrdersCompletedAndTotalTripTime = await sequelize.query(`
+      select count(id) as number_of_completed_orders, sum(trip_duration) as total_trip_time 
+      from trips where is_delivered = 1;`, 
+      { type: sequelize.QueryTypes.SELECT });
+      if (!totalOrdersCompletedAndTotalTripTime) {
+        return {
+          number_of_completed_orders: 0,
+          total_trip_time: 0
+        }
+      }
+      return totalOrdersCompletedAndTotalTripTime[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
+  trips.getStatsForEveryVehicleType = async () => {
+    try {
+      let totalOrdersCompletedAndTotalTripTime = await sequelize.query(`
+      select v.vehicle_type, 
+      count(t.id) as number_of_completed_orders, 
+      sum(t.trip_duration) as total_trip_time,
+      sum(t.trip_earning) as total_revenue,
+      sum(t.trip_commission) as total_expense 
+      from vehicles v left join trips t on v.id = t.vehicle_id and t.is_delivered = 1
+      group by v.vehicle_type;`, 
+      { type: sequelize.QueryTypes.SELECT });
+      if (!totalOrdersCompletedAndTotalTripTime) {
+        throw "Stats not found.";
+      }
+      return totalOrdersCompletedAndTotalTripTime;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
   return trips;
 };

@@ -1,9 +1,9 @@
 const models = require("../models");
 
 const locations = {
-    getAllLocations: (req, res) => {
+    getAllLocations: async function (req, res) {
         try {
-            let locationsDetails = await models.locations.getAllLocations();
+            let locationsDetails = await models.locations.getAllLocations([]);
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
             for (const location of locationsDetails) {
                 location.can_be_unlocked = parseFloat(location.location_cost) <= balance;
@@ -14,21 +14,21 @@ const locations = {
         }
     },
 
-    getLocation: (req, res) => {
+    getLocation: async function (req, res) {
         try {
             let locationDetails = await models.locations.getLocation(req.params.location_id);
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
-            locationDetails.can_be_unlocked = parseFloat(locationDetails.location_cost) <= balance;
-            res.status(200).send({ success: true, ...locationDetails });
+            locationDetails.can_be_unlocked = (parseFloat(locationDetails.location_cost) <= balance) && !locationDetails.dataValues.is_unlocked;
+            res.status(200).send({ success: true, ...(locationDetails.dataValues), can_be_unlocked: locationDetails.can_be_unlocked });
         } catch (error) {
             res.status(400).send({success: false, error});
         }
     },
 
-    unlockLocation: (req, res) => {
+    unlockLocation: async function (req, res) {
         const t = await models.sequelize.transaction();
         try {
-            let locationDetails = await models.locations.getLocation(req.data.location_id);
+            let locationDetails = await models.locations.getLocation(req.body.location_id);
             if (locationDetails.is_unlocked) {
                 return res.status(404).send({
                     success: false,
@@ -45,7 +45,7 @@ const locations = {
             let total_expense = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_expense));
             balance = balance - parseFloat(locationDetails.location_cost);
             total_expense = total_expense + parseFloat(locationDetails.location_cost);
-            await models.locations.unlockLocation(req.data.location_id, t);
+            await models.locations.unlockLocation(req.body.location_id, t);
             await models.variables.setVariableValue(models.variables.variableHolder.total_balance, balance, t);
             await models.variables.setVariableValue(models.variables.variableHolder.total_expense, total_expense, t);
             await t.commit();
