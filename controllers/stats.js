@@ -6,7 +6,7 @@ const stats = {
             let balance = await models.variables.getVariableValue(models.variables.variableHolder.total_balance);
             res.status(200).send({ success: true, balance });
         } catch (error) {
-            res.status(400).send({ success: false, error });
+            res.status(500).send({ success: false, error });
         }
     },
 
@@ -33,7 +33,7 @@ const stats = {
             statsData.driver_wise_stats = driver_wise_stats;
             res.status(200).send({ success: true, statsData });
         } catch (error) {
-            res.status(400).send({ success: false, error });
+            res.status(500).send({ success: false, error });
         }
     }
 };

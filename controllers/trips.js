@@ -5,13 +5,13 @@ const trips = {
         try {
             let probability = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.order_probability));
             if (Math.random() > probability) {
-                return res.status(400).send({ success: false, error: "No order." });
+                return res.status(404).send({ success: false, error: "No order." });
             }
             let locationDetails = await models.locations.getAllLocations(["x_coordinate", "y_coordinate"]);
             locationDetails = locationDetails.filter(location => location.is_unlocked == true);
             let sourceLocation, destinationLocation;
             if (locationDetails.length <= 1) {
-                return res.status(400).send({ success: false, error: "No locations available." });
+                return res.status(404).send({ success: false, error: "No locations available." });
             } else {
                 locationDetails.sort(() => Math.random() - Math.random()).slice(0, 2);
                 sourceLocation = locationDetails[0];
@@ -22,12 +22,12 @@ const trips = {
                 + Math.pow(sourceLocation.y_coordinate - destinationLocation.y_coordinate, 2)
             ).toFixed(2);
             if (trip_distance > 20) {
-                return res.status(400).send({ success: false, error: "Distance too high." });
+                return res.status(404).send({ success: false, error: "Distance too high." });
             }
             let numberOfPeople = Math.ceil(Math.random() * 10);
             let eligibleVehicles = await models.vehicles.getFreeVehiclesBasedOnDistanceAndLoad(trip_distance, numberOfPeople);
             if (!eligibleVehicles.length) {
-                return res.status(400).send({ success: false, error: "No vehicles available." });
+                return res.status(404).send({ success: false, error: "No vehicles available." });
             }
             let tripData = {
                 source_id: sourceLocation.id,
@@ -63,7 +63,7 @@ const trips = {
             tripData.is_doubled = isDoubled;
             res.status(200).send({ success: true, tripData });
         } catch (error) {
-            res.status(400).send({ success: false, error });
+            res.status(500).send({ success: false, error });
         }
     },
     acceptTrip: async function (req, res) {
@@ -90,7 +90,7 @@ const trips = {
             res.status(200).send({ success: true, message: "Trip accepted." });
         } catch (error) {
             await t.rollback();
-            res.status(400).send({ success: false, error });
+            res.status(500).send({ success: false, error });
         }
     },
     completeTrip: async function (req, res) {
@@ -112,7 +112,7 @@ const trips = {
             res.status(200).send({ success: true, message: "Trip completed." });
         } catch (error) {
             await t.rollback();
-            res.status(400).send({ success: false, error });
+            res.status(500).send({ success: false, error });
         }
     }
 }

@@ -13,7 +13,7 @@ const vehicles = {
             }
             res.status(200).send({success: true, ...vehicles});
         } catch (error) {
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     },
 
@@ -26,7 +26,7 @@ const vehicles = {
             }
             res.status(200).send({success: true, ...vehicle});
         } catch (error) {
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     },
 
@@ -61,7 +61,7 @@ const vehicles = {
             });
         } catch (error) {
             await t.rollback();
-            res.status(400).send({
+            res.status(500).send({
                 success: false,
                 message: "Vehicle unlock unsuccessful."
             });
@@ -92,7 +92,7 @@ const vehicles = {
         } catch (error) {
             await t.rollback();
             console.error(error);
-            res.status(400).send({
+            res.status(500).send({
                 success: false,
                 message: "Vehicle lock unsuccessful."
             });
@@ -104,7 +104,7 @@ const vehicles = {
             let resell_value = await models.vehicles.getResellValue(req.params.vehicle_type);
             res.status(200).send({ success: true, resell_value });
         } catch (error) {
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     }
 

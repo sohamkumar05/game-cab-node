@@ -10,7 +10,7 @@ const locations = {
             }
             res.status(200).send({ success: true, ...locationsDetails });
         } catch (error) {
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     },
 
@@ -21,7 +21,7 @@ const locations = {
             locationDetails.can_be_unlocked = (parseFloat(locationDetails.location_cost) <= balance) && !locationDetails.dataValues.is_unlocked;
             res.status(200).send({ success: true, ...(locationDetails.dataValues), can_be_unlocked: locationDetails.can_be_unlocked });
         } catch (error) {
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     },
 
@@ -30,14 +30,14 @@ const locations = {
         try {
             let locationDetails = await models.locations.getLocation(req.body.location_id);
             if (locationDetails.is_unlocked) {
-                return res.status(404).send({
+                return res.status(400).send({
                     success: false,
                     error: "Location is already unlocked."
                 });
             }
             let balance = parseFloat(await models.variables.getVariableValue(models.variables.variableHolder.total_balance));
             if (balance < parseFloat(locationDetails.location_cost)) {
-                return res.status(404).send({
+                return res.status(400).send({
                     success: false,
                     error: "Not enough money to unlock."
                 });
@@ -55,7 +55,7 @@ const locations = {
             });
         } catch (error) {
             await t.rollback();
-            res.status(400).send({success: false, error});
+            res.status(500).send({success: false, error});
         }
     }
 }
